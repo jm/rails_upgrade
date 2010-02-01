@@ -33,7 +33,14 @@ module Rails
     
     class RouteRedrawer
       attr_accessor :routes
-      cattr_accessor :stack
+
+      def self.stack
+        @stack
+      end
+      
+      def self.stack=(val)
+        @stack = val
+      end
       
       def initialize
         @routes = []
