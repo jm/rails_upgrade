@@ -231,9 +231,10 @@ module Rails
       def extract_filenames_from_grep(output)
         return nil if output.empty?
         
-        # I hate rescue nil as much as the next guy but I have a reason here at least...
         fnames = output.split("\n").map do |fn| 
-          fn.match(/^(.+?):/)[1] rescue nil
+          if m = fn.match(/^(.+?):/)
+            m[1]
+          end
         end.compact
         
         fnames.uniq
