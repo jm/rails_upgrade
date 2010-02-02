@@ -119,6 +119,13 @@ class ApplicationCheckerTest < ActiveSupport::TestCase
     assert @checker.alerts.has_key?("Known broken plugins")
   end
   
+  def test_ignoring_comments
+    make_file("config/", "routes.rb", "#  map.connect 'fail'")
+    @checker.check_routes
+
+    assert !@checker.alerts.has_key?("Old router API")
+  end
+  
   def teardown
     clear_files
     
