@@ -2,6 +2,7 @@ $:.unshift(File.dirname(__FILE__) + "/../lib")
 require 'routes_upgrader'
 require 'gemfile_generator'
 require 'application_checker'
+require 'new_configuration_generator'
 
 namespace :rails do
   namespace :upgrade do
@@ -25,6 +26,14 @@ namespace :rails do
       new_routes = upgrader.generate_new_routes
     
       puts new_routes
+    end
+    
+    desc "Extracts your configuration code so you can create a new config/application.rb"
+    task :configuration do
+      upgrader = Rails::Upgrading::NewConfigurationGenerator.new
+      new_config = upgrader.generate_new_application_rb
+      
+      puts new_config
     end
   end
 end
