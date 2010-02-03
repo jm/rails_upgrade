@@ -5,11 +5,10 @@ require 'rake/rdoctask'
 desc 'Default: run unit tests.'
 task :default => :test
 
-desc 'Test the rails_upgrade plugin.'
-Rake::TestTask.new(:test) do |t|
+Rake::TestTask.new do |t|
   t.libs << 'lib'
   t.libs << 'test'
-  t.pattern = 'test/*_test.rb'
+  t.test_files = FileList['test/*_test.rb']
   t.verbose = true
 end
 
