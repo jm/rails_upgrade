@@ -1,6 +1,27 @@
 # TODO: Fix formatting on member/collection methods
+
 module Rails
   module Upgrading
+    module FakeRouter
+      module ActionController
+        module Routing
+          class Routes
+            def self.setup
+              @redrawer = Rails::Upgrading::RouteRedrawer.new
+            end
+
+            def self.redrawer
+              @redrawer
+            end
+
+            def self.draw
+              yield @redrawer
+            end
+          end
+        end
+      end
+    end
+    
     class RoutesUpgrader
       def generate_new_routes
         if has_routes_file?
@@ -19,14 +40,14 @@ module Rails
       end
       
       def upgrade_routes
-        ActionController::Routing::Routes.setup
+        FakeRouter::ActionController::Routing::Routes.setup
 
         # Read and eval the file; our fake route mapper will capture
         # the calls to draw routes and generate new route code
-        eval(routes_code)
+        FakeRouter.module_eval(routes_code)
 
         # Give the route set to the code generator and get its output
-        generator = RouteGenerator.new(ActionController::Routing::Routes.redrawer.routes)
+        generator = RouteGenerator.new(FakeRouter::ActionController::Routing::Routes.redrawer.routes)
         generator.generate
       end
     end
@@ -312,24 +333,6 @@ module Rails
     private
       def app_name
         File.basename(Dir.pwd)
-      end
-    end
-  end
-end
-
-module ActionController
-  module Routing
-    class Routes
-      def self.setup
-        @redrawer = Rails::Upgrading::RouteRedrawer.new
-      end
-      
-      def self.redrawer
-        @redrawer
-      end
-      
-      def self.draw
-        yield @redrawer
       end
     end
   end
