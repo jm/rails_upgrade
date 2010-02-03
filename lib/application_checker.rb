@@ -52,7 +52,7 @@ module Rails
       
       # Check for deprecated router syntax
       def check_routes
-        lines = ["map.", "ActionController::Routing::Routes", ".resources"].map do |v|
+        lines = ["map\\.", "ActionController::Routing::Routes", "\\.resources"].map do |v|
           grep_for(v, "config/routes.rb").empty? ? nil : true
         end.compact
         
@@ -201,7 +201,7 @@ module Rails
       def find_with_grep(text, where)
         value = ""
       
-        Open3.popen3("grep -r '#{Regexp.escape(text)}' #{where}") do |stdin, stdout, stderr|
+        Open3.popen3("grep -r '#{text}' #{where}") do |stdin, stdout, stderr|
           value = stdout.read
         end
       
