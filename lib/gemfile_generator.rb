@@ -66,7 +66,7 @@ git "git://github.com/rails/rack.git"
 gem "rails", "3.0.pre"
 
 STR
-        preamble + "\n" + generate_upgraded_code
+        preamble + generate_upgraded_code
       end
       
       # Get Gemfile call for all the gems
