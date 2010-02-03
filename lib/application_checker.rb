@@ -66,6 +66,29 @@ module Rails
         end
       end
       
+      # Check for deprecated test_help require
+      def check_test_help
+        files = []
+
+        # Hate to duplicate code, but we have to double quote this one...
+        lines = grep_for("\'test_help\'", "test/", true)
+        files += extract_filenames(lines) || []
+
+        lines = grep_for("\"test_help\"", "test/")
+        files += extract_filenames(lines) || []
+        
+        files.uniq!
+        
+        unless files.empty?
+          alert(
+            "Deprecated test_help path", 
+            "You now must require 'rails/test_help' not just 'test_help'.",
+            "http://weblog.rubyonrails.org/2009/9/1/gem-packaging-best-practices",
+            files
+          )
+        end
+      end
+      
       # Check for old (pre-application.rb) environment.rb file
       def check_environment
         unless File.exist?("config/application.rb")
@@ -181,14 +204,14 @@ module Rails
       # depending on platform.
       #
       # TODO: Figure out if this works on Windows.
-      def grep_for(text, where = "./")
+      def grep_for(text, where = "./", double_quote = false)
         # If they're on Windows, they probably don't have grep.
         @probably_has_grep ||= (Config::CONFIG['host_os'].downcase =~ /mswin|windows|mingw/).nil?
 
         if @probably_has_grep
-          find_with_grep(text, base_path + where)
+          find_with_grep(text, base_path + where, double_quote)
         else
-          find_with_rak(text, base_path + where)
+          find_with_rak(text, base_path + where, double_quote)
         end
       end
       
@@ -198,10 +221,16 @@ module Rails
       end
       
       # Use the grep utility to find a string in a set of files
-      def find_with_grep(text, where)
+      def find_with_grep(text, where, double_quote)
         value = ""
-      
-        Open3.popen3("grep -r '#{text}' #{where}") do |stdin, stdout, stderr|
+        # Specifically double quote for finding 'test_help'
+        command = if double_quote
+                    "grep -r \"#{text}\" #{where}"
+                  else
+                    "grep -r '#{text}' #{where}"
+                  end
+                  
+        Open3.popen3(command) do |stdin, stdout, stderr|
           value = stdout.read
         end
       
@@ -209,7 +238,7 @@ module Rails
       end
       
       # Use the rak gem to grep the files (not yet implemented)
-      def find_with_rak(text, where)
+      def find_with_rak(text, where, double_quote)
         value = ""
 
         Open3.popen3("rak --nogroup -l '#{Regexp.escape(text)}' #{where}") do |stdin, stdout, stderr|

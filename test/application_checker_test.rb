@@ -71,6 +71,27 @@ class ApplicationCheckerTest < ActiveSupport::TestCase
     assert @checker.alerts.has_key?("Old router API")
   end
   
+  def test_check_for_old_test_help
+    make_file("test/", "test_helper.rb", "  require 'test_help'")
+    @checker.check_test_help
+
+    assert @checker.alerts.has_key?("Deprecated test_help path")
+  end
+  
+  def test_check_for_old_test_help_with_double_quotes
+    make_file("test/", "test_helper.rb", "  require \"test_help\"")
+    @checker.check_test_help
+
+    assert @checker.alerts.has_key?("Deprecated test_help path")
+  end
+  
+  def test_check_for_old_test_help_doesnt_see_test_helper
+    make_file("test/", "test_helper.rb", "  require 'test_helper'")
+    @checker.check_test_help
+
+    assert !@checker.alerts.has_key?("Deprecated test_help path")
+  end
+  
   def test_check_lack_of_app_dot_rb
     @checker.check_environment
 
