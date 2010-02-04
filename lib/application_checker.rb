@@ -23,7 +23,7 @@ module Rails
       # Check for deprecated ActiveRecord calls
       def check_ar_methods
         files = []
-        ["find(:all", "find(:first", ":conditions =>", ":joins =>"].each do |v|
+        ["find(:all", "find(:first", "find.*:conditions =>", ":joins =>"].each do |v|
           lines = grep_for(v, "app/")
           files += extract_filenames(lines) || []
         end
