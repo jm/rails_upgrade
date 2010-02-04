@@ -225,9 +225,9 @@ module Rails
         value = ""
         # Specifically double quote for finding 'test_help'
         command = if double_quote
-                    "grep -r \"#{text}\" #{where}"
+                    "grep -r --exclude=\*.svn\* \"#{text}\" #{where}"
                   else
-                    "grep -r '#{text}' #{where}"
+                    "grep -r --exclude=\*.svn\* '#{text}' #{where}"
                   end
                   
         Open3.popen3(command) do |stdin, stdout, stderr|
