@@ -15,7 +15,8 @@ module Rails
       
       # Run all the check methods
       def run
-        the_methods = (self.public_methods - Object.methods) - ["run", "initialize"]
+        # Ruby 1.8 returns method names as strings whereas 1.9 uses symbols
+        the_methods = (self.public_methods - Object.methods) - [:run, :initialize, "run", "initialize"]
         
         the_methods.each {|m| send m }
       end
@@ -299,7 +300,7 @@ module Rails
         puts "More information: #{more_info_url}"
         puts
         puts "The culprits: "
-        culprits.each do |c|
+        Array(culprits).each do |c|
           puts "\t- #{c}"
         end
         puts
@@ -312,7 +313,7 @@ module Rails
         puts "#{BOLD}More information:#{CLEAR} #{CYAN}#{more_info_url}"
         puts
         puts "#{WHITE}The culprits: "
-        culprits.each do |c|
+        Array(culprits).each do |c|
           puts "#{YELLOW}\t- #{c}"
         end
       ensure
