@@ -327,7 +327,7 @@ module Rails
           r.to_route_code
         end.join("\n")
         
-        "#{app_name.classify}::Application.routes do\n#{@new_code}\nend\n"
+        "#{app_name.classify}::Application.routes.draw do\n#{@new_code}\nend\n"
       end
       
     private
