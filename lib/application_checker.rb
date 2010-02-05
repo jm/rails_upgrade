@@ -185,11 +185,16 @@ module Rails
         # If they're on Windows, they probably don't have grep.
         @probably_has_grep ||= (Config::CONFIG['host_os'].downcase =~ /mswin|windows|mingw/).nil?
 
-        if @probably_has_grep
+        lines = if @probably_has_grep
           find_with_grep(text, base_path + where)
         else
           find_with_rak(text, base_path + where)
         end
+        
+        # ignore comments
+        lines.gsub! /^\s*#.+$/m, ""
+        
+        lines
       end
       
       # Sets a base path for finding files; mostly for testing
