@@ -1,4 +1,4 @@
-$:.unshift(File.dirname(__FILE__) + "/../lib")
+$:.unshift(File.dirname(__FILE__) + "/../../lib")
 require 'routes_upgrader'
 require 'gemfile_generator'
 require 'application_checker'

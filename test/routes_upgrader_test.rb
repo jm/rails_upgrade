@@ -40,7 +40,7 @@ class RoutesUpgraderTest < ActiveSupport::TestCase
       end
     "
     
-    new_routes_code = "MyApplication::Application.routes do
+    new_routes_code = "MyApplication::Application.routes.draw do
   match '/home' => 'home#index'
   match '/login' => 'sessions#new', :as => :login
   resources :hats
@@ -101,7 +101,7 @@ end
       end
     "
 
-    new_routes_code = "MyApplication::Application.routes do
+    new_routes_code = "MyApplication::Application.routes.draw do
   match '/' => 'home#index'
 end
 "
@@ -122,7 +122,7 @@ end
       end
     "
 
-    new_routes_code = "MyApplication::Application.routes do
+    new_routes_code = "MyApplication::Application.routes.draw do
   match '/:controller(/:action(/:id))'
 end
 "

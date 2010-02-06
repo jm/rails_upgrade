@@ -15,7 +15,8 @@ module Rails
       
       # Run all the check methods
       def run
-        the_methods = (self.public_methods - Object.methods) - ["run", "initialize"]
+        # Ruby 1.8 returns method names as strings whereas 1.9 uses symbols
+        the_methods = (self.public_methods - Object.methods) - [:run, :initialize, "run", "initialize"]
         
         the_methods.each {|m| send m }
       end
@@ -23,7 +24,7 @@ module Rails
       # Check for deprecated ActiveRecord calls
       def check_ar_methods
         files = []
-        ["find(:all", "find(:first", ":conditions =>", ":joins =>"].each do |v|
+        ["find(:all", "find(:first", "find.*:conditions =>", ":joins =>"].each do |v|
           lines = grep_for(v, "app/")
           files += extract_filenames(lines) || []
         end
@@ -251,9 +252,9 @@ module Rails
         value = ""
         # Specifically double quote for finding 'test_help'
         command = if double_quote
-                    "grep -r \"#{text}\" #{where}"
+                    "grep -r --exclude=\*.svn\* \"#{text}\" #{where}"
                   else
-                    "grep -r '#{text}' #{where}"
+                    "grep -r --exclude=\*.svn\* '#{text}' #{where}"
                   end
                   
         Open3.popen3(command) do |stdin, stdout, stderr|
@@ -326,7 +327,7 @@ module Rails
         puts "More information: #{more_info_url}"
         puts
         puts "The culprits: "
-        culprits.each do |c|
+        Array(culprits).each do |c|
           puts "\t- #{c}"
         end
         puts
@@ -339,7 +340,7 @@ module Rails
         puts "#{BOLD}More information:#{CLEAR} #{CYAN}#{more_info_url}"
         puts
         puts "#{WHITE}The culprits: "
-        culprits.each do |c|
+        Array(culprits).each do |c|
           puts "#{YELLOW}\t- #{c}"
         end
       ensure
