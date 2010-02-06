@@ -147,6 +147,20 @@ class ApplicationCheckerTest < ActiveSupport::TestCase
     assert !@checker.alerts.has_key?("Old router API")
   end
   
+  def test_check_deprecated_constants_in_app_code
+    make_file("app/controllers/", "thing_controller.rb", "class ThingController; THING = RAILS_ENV; end;")
+    @checker.check_deprecated_constants
+    
+    assert @checker.alerts.has_key?("Deprecated constant(s)")
+  end
+  
+  def test_check_deprecated_constants_in_lib
+    make_file("lib/", "extra_thing.rb", "class ExtraThing; THING = RAILS_ENV; end;")
+    @checker.check_deprecated_constants
+    
+    assert @checker.alerts.has_key?("Deprecated constant(s)")
+  end
+  
   def teardown
     clear_files
     

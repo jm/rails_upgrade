@@ -112,6 +112,27 @@ module Rails
         end
       end
       
+      # Check for deprecated constants
+      def check_deprecated_constants
+        files = []
+        ["RAILS_ENV", "RAILS_ROOT", "RAILS_DEFAULT_LOGGER"].each do |v|
+          lines = grep_for(v, "app/")
+          files += extract_filenames(lines) || []
+          
+          lines = grep_for(v, "lib/")
+          files += extract_filenames(lines) || []
+        end
+        
+        unless files.empty?
+          alert(
+            "Deprecated constant(s)", 
+            "Constants like RAILS_ENV, RAILS_ROOT, and RAILS_DEFAULT_LOGGER are now deprecated.",
+            "http://litanyagainstfear.com/blog/2010/02/03/the-rails-module/",
+            files.uniq
+          )
+        end
+      end
+      
       # Check for old-style config.gem calls
       def check_gems
         lines = grep_for("config.gem ", "config/*.rb")
