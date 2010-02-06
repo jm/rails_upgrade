@@ -208,11 +208,16 @@ module Rails
         # If they're on Windows, they probably don't have grep.
         @probably_has_grep ||= (Config::CONFIG['host_os'].downcase =~ /mswin|windows|mingw/).nil?
 
-        if @probably_has_grep
+        lines = if @probably_has_grep
           find_with_grep(text, base_path + where, double_quote)
         else
           find_with_rak(text, base_path + where, double_quote)
         end
+        
+        # ignore comments
+        lines.gsub! /^\s*#.+$/m, ""
+        
+        lines
       end
       
       # Sets a base path for finding files; mostly for testing
@@ -260,9 +265,10 @@ module Rails
       def extract_filenames_from_grep(output)
         return nil if output.empty?
         
-        # I hate rescue nil as much as the next guy but I have a reason here at least...
         fnames = output.split("\n").map do |fn| 
-          fn.match(/^(.+?):/)[1] rescue nil
+          if m = fn.match(/^(.+?):/)
+            m[1]
+          end
         end.compact
         
         fnames.uniq
