@@ -221,6 +221,51 @@ module Rails
         end
       end
       
+      # Checks for old-style ERb helpers
+      def check_old_helpers
+        lines = grep_for("<% .* do.*%>", "app/views/**/*")
+        files = extract_filenames(lines)
+        
+        if files
+          alert(
+            "Deprecated ERb helper calls", 
+            "Calls to helpers like form_for and other buffer-appending methods now require the = to be present on the ERb call (i.e., <%=).  The only exceptions to this are helpers like content_for and cache.",
+            "http://weblog.rubyonrails.org/",
+            files
+          )
+        end
+      end
+      
+      # Checks for old cookie secret settings
+      def check_old_cookie_setting
+        lines = grep_for("ActionController::Base.session = {", "config/**/*")
+        files = extract_filenames(lines)
+        
+        if files
+          alert(
+            "Deprecated cookie secret setting", 
+            "Previously, session store was set directly on ActionController::Base; now it's now config.cookie_secret.",
+            "http://weblog.rubyonrails.org/",
+            files
+          )
+        end
+      end
+      
+      # Checks for old session settings
+      def check_old_session_setting
+        lines = grep_for("ActionController::Base.session_store", "config/**/*")
+        files = extract_filenames(lines)
+        
+        if files
+          alert(
+            "Old session store setting", 
+            "Previously, session store was set directly on ActionController::Base; now it's now config.session_store :whatever.",
+            "http://weblog.rubyonrails.org/",
+            files
+          )
+        end
+      end
+      
     private
       # Find a string in a set of files; calls +find_with_grep+ and +find_with_rak+
       # depending on platform.

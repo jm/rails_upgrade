@@ -1,5 +1,6 @@
 require 'test_helper'
 require 'application_checker'
+require 'fileutils'
 
 tmp_dir = "#{File.dirname(__FILE__)}/fixtures/tmp"
 
@@ -159,6 +160,27 @@ class ApplicationCheckerTest < ActiveSupport::TestCase
     @checker.check_deprecated_constants
     
     assert @checker.alerts.has_key?("Deprecated constant(s)")
+  end
+  
+  def test_check_deprecated_cookie_settings
+    make_file("config/initializers/", "more_settings.rb", "ActionController::Base.session = {\n:whatever => 'woot'\n}")
+    @checker.check_old_cookie_setting
+    
+    assert @checker.alerts.has_key?("Deprecated cookie secret setting")
+  end
+  
+  def test_check_deprecated_session_settings
+    make_file("config/initializers/", "more_settings.rb", "ActionController::Base.session_store = :cookie\nthings.awesome(:whatever)")
+    @checker.check_old_session_setting
+    
+    assert @checker.alerts.has_key?("Old session store setting")
+  end
+  
+  def test_check_helpers
+    make_file("app/views/users/", "test.html.erb", "<b>blah blah blah</b><% form_for(:thing) do |f| %> <label>doo dah</label> <%= f.whatever %> <% end %>")
+    @checker.check_old_helpers
+    
+    assert @checker.alerts.has_key?("Deprecated ERb helper calls")
   end
   
   def teardown
