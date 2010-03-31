@@ -189,7 +189,7 @@ module Rails
                     grep_for("def manifest", g).empty? ? g : nil
                   end.compact
         
-          if files
+          if !files.empty?
             alert(
               "Old Rails generator API", 
               "A plugin in the app is using the old generator API (a new one may be available at http://github.com/trydionel/rails3-generators).",
