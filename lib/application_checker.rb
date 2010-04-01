@@ -229,7 +229,7 @@ module Rails
         if files
           alert(
             "Deprecated ERb helper calls", 
-            "Calls to helpers like form_for and other buffer-appending methods now require the = to be present on the ERb call (i.e., <%=).  The only exceptions to this are helpers like content_for and cache.",
+            "Block helpers that use concat (e.g., form_for) should use <%= instead of <%.  The current form will continue to work for now, but you will get deprecation warnings since this form will go away in the future.",
             "http://weblog.rubyonrails.org/",
             files
           )
