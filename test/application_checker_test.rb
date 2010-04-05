@@ -161,12 +161,19 @@ class ApplicationCheckerTest < ActiveSupport::TestCase
     
     assert @checker.alerts.has_key?("Deprecated constant(s)")
   end
-  
+
   def test_check_deprecated_cookie_settings
-    make_file("config/initializers/", "more_settings.rb", "ActionController::Base.session = {\n:whatever => 'woot'\n}")
-    @checker.check_old_cookie_setting
-    
+    make_file("config/initializers/", "more_settings.rb", "ActionController::Base.cookie_verifier_secret = 'OMG'")
+    @checker.check_old_cookie_secret
+
     assert @checker.alerts.has_key?("Deprecated cookie secret setting")
+  end
+
+  def test_check_deprecated_session_secret
+    make_file("config/initializers/", "more_settings.rb", "ActionController::Base.session = {\n:whatever => 'woot'\n}")
+    @checker.check_old_session_secret
+
+    assert @checker.alerts.has_key?("Deprecated session secret setting")
   end
   
   def test_check_deprecated_session_settings
