@@ -237,14 +237,28 @@ module Rails
       end
       
       # Checks for old cookie secret settings
-      def check_old_cookie_setting
-        lines = grep_for("ActionController::Base.session = {", "config/**/*")
+      def check_old_cookie_secret
+        lines = grep_for("ActionController::Base.cookie_verifier_secret = ", "config/**/*")
         files = extract_filenames(lines)
-        
+
         if files
           alert(
             "Deprecated cookie secret setting", 
-            "Previously, session store was set directly on ActionController::Base; now it's now config.cookie_secret.",
+            "Previously, cookie secret was set directly on ActionController::Base; it's now config.secret_token.",
+            "http://weblog.rubyonrails.org/",
+            files
+          )
+        end
+      end
+
+      def check_old_session_secret
+        lines = grep_for("ActionController::Base.session = {", "config/**/*")
+        files = extract_filenames(lines)
+
+        if files
+          alert(
+            "Deprecated session secret setting", 
+            "Previously, session secret was set directly on ActionController::Base; it's now config.secret_token.",
             "http://weblog.rubyonrails.org/",
             files
           )
@@ -259,7 +273,7 @@ module Rails
         if files
           alert(
             "Old session store setting", 
-            "Previously, session store was set directly on ActionController::Base; now it's now config.session_store :whatever.",
+            "Previously, session store was set directly on ActionController::Base; it's now config.session_store :whatever.",
             "http://weblog.rubyonrails.org/",
             files
           )
