@@ -245,7 +245,7 @@ module Rails
           alert(
             "Deprecated cookie secret setting", 
             "Previously, cookie secret was set directly on ActionController::Base; it's now config.secret_token.",
-            "http://weblog.rubyonrails.org/",
+            "http://lindsaar.net/2010/4/7/rails_3_session_secret_and_session_store",
             files
           )
         end
@@ -259,7 +259,7 @@ module Rails
           alert(
             "Deprecated session secret setting", 
             "Previously, session secret was set directly on ActionController::Base; it's now config.secret_token.",
-            "http://weblog.rubyonrails.org/",
+            "http://lindsaar.net/2010/4/7/rails_3_session_secret_and_session_store",
             files
           )
         end
@@ -274,7 +274,7 @@ module Rails
           alert(
             "Old session store setting", 
             "Previously, session store was set directly on ActionController::Base; it's now config.session_store :whatever.",
-            "http://weblog.rubyonrails.org/",
+            "http://lindsaar.net/2010/4/7/rails_3_session_secret_and_session_store",
             files
           )
         end
