@@ -236,6 +236,25 @@ module Rails
         end
       end
       
+      # Checks for old-style AJAX helpers
+      def check_old_ajax_helpers
+        files = []
+        ['link_to_remote','form_remote_tag','remote_form_for'].each do |type|
+          lines = grep_for(type, "app/views/**/*")
+          inner_files = extract_filenames(lines)
+          files += inner_files unless inner_files.nil?
+        end
+                
+        if files
+          alert(
+            "Deprecated AJAX helper calls", 
+            "AJAX javascript helpers have been switched to be unobtrusive and use :remote => true instead of having a seperate function to handle remote requests.",
+            "http://www.themodestrubyist.com/2010/02/24/rails-3-ujs-and-csrf-meta-tags/",
+            files
+          )
+        end
+      end
+      
       # Checks for old cookie secret settings
       def check_old_cookie_secret
         lines = grep_for("ActionController::Base.cookie_verifier_secret = ", "config/**/*")
