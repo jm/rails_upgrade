@@ -120,6 +120,48 @@ class ApplicationCheckerTest < ActiveSupport::TestCase
     assert @checker.alerts.has_key?("Old ActionMailer class API")
   end
 
+  def test_check_mailer_syntax_from
+    make_file("app/models/", "notifications.rb", "def signup\nfrom @user\n end")
+    @checker.check_mailers
+
+    assert @checker.alerts.has_key?("Old ActionMailer class API")
+  end
+
+  def test_check_mailer_syntax_subject
+    make_file("app/models/", "notifications.rb", "def signup\nsubject @subject\n end")
+    @checker.check_mailers
+
+    assert @checker.alerts.has_key?("Old ActionMailer class API")
+  end
+
+  def test_check_mailer_syntax_attachment
+    make_file("app/models/", "notifications.rb", "def signup\nattachment 'application/pdf' do |a|\n end")
+    @checker.check_mailers
+
+    assert @checker.alerts.has_key?("Old ActionMailer class API")
+  end
+
+  def test_new_check_mailer_syntax_from
+    make_file("app/models/", "notifications.rb", "def signup\n:from => @users\n end")
+    @checker.check_mailers
+
+    assert ! @checker.alerts.has_key?("Old ActionMailer class API")
+  end
+
+  def test_new_check_mailer_syntax_subject
+    make_file("app/models/", "notifications.rb", "def signup\n:subject => @users\n end")
+    @checker.check_mailers
+
+    assert ! @checker.alerts.has_key?("Old ActionMailer class API")
+  end
+
+  def test_new_check_mailer_syntax_attachments
+    make_file("app/models/", "notifications.rb", "def signup\nattachments['an-image.jp'] = File.read('an-image.jpg')\n end")
+    @checker.check_mailers
+
+    assert ! @checker.alerts.has_key?("Old ActionMailer class API")
+  end
+
   def test_check_mailer_api
     make_file("app/controllers/", "thing_controller.rb", "def signup\n Notifications.deliver_signup\n end")
     @checker.check_mailers

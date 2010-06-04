@@ -165,8 +165,8 @@ module Rails
         end
 
         files = []
-        ["recipients ", "attachment ", "subject ", "from "].each do |v|
-          lines = grep_for(v, "app/models/")
+        ["recipients ", "attachment(?!s) ", "(?<!:)subject ", "(?<!:)from "].each do |v|
+          lines = grep_for_with_perl_regex(v, "app/models/")
           files += extract_filenames(lines) || []
         end
 
@@ -300,16 +300,20 @@ module Rails
       end
 
     private
+      def grep_for_with_perl_regex(text, where = "./", double_quote = false)
+        grep_for(text, where, double_quote, true)
+      end
+
       # Find a string in a set of files; calls +find_with_grep+ and +find_with_rak+
       # depending on platform.
       #
       # TODO: Figure out if this works on Windows.
-      def grep_for(text, where = "./", double_quote = false)
+      def grep_for(text, where = "./", double_quote = false, perl_regex = false)
         # If they're on Windows, they probably don't have grep.
         @probably_has_grep ||= (Config::CONFIG['host_os'].downcase =~ /mswin|windows|mingw/).nil?
 
         lines = if @probably_has_grep
-          find_with_grep(text, base_path + where, double_quote)
+          find_with_grep(text, base_path + where, double_quote, perl_regex)
         else
           find_with_rak(text, base_path + where, double_quote)
         end
@@ -326,13 +330,13 @@ module Rails
       end
 
       # Use the grep utility to find a string in a set of files
-      def find_with_grep(text, where, double_quote)
+      def find_with_grep(text, where, double_quote, perl_regex = false)
         value = ""
         # Specifically double quote for finding 'test_help'
         command = if double_quote
-                    "grep -r --exclude=\*.svn\* \"#{text}\" #{where}"
+                    "grep -r #{"-P" if perl_regex} --exclude=\*.svn\* \"#{text}\" #{where}"
                   else
-                    "grep -r --exclude=\*.svn\* '#{text}' #{where}"
+                    "grep -r #{"-P" if perl_regex} --exclude=\*.svn\* '#{text}' #{where}"
                   end
 
         Open3.popen3(command) do |stdin, stdout, stderr|
