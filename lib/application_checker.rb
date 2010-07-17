@@ -59,7 +59,7 @@ module Rails
           files += extract_filenames(lines) || []
         end
         
-        if files
+        unless files.empty?
           alert(
             "Updated syntax for validate_on_* methods",
             "Validate-on-callback methods (validate_on_create/validate_on_destroy) have been changed to validate :x, :on => :create",
@@ -77,7 +77,7 @@ module Rails
           files += extract_filenames(lines) || []
         end
         
-        if files
+        unless files.empty?
           alert(
             "Updated syntax for before_validation_on_* methods",
             "before_validation_on_* methods have been changed to before_validation(:on => :create/:update) { ... }",
