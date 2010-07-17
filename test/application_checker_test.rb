@@ -57,6 +57,13 @@ class ApplicationCheckerTest < ActiveSupport::TestCase
 
     assert @checker.alerts.has_key?("Soon-to-be-deprecated ActiveRecord calls")
   end
+  
+  def test_check_validation_methods
+    make_file("app/models", "post.rb", "validate_on_create :comments_valid?")
+    @checker.check_validation_methods
+    
+    assert @checker.alerts.has_key?("Removed validate_on_* methods")
+  end
 
   def test_named_scope_left_over
     make_file("app/models", "post.rb", "named_scope :failure")

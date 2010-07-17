@@ -50,6 +50,24 @@ module Rails
           )
         end
       end
+      
+      def check_validation_methods
+        files = []
+        
+        ["validate_on_create", "validate_on_update"].each do |v|
+          lines = grep_for(v, "app/models/")
+          files += extract_filenames(lines) || []
+        end
+        
+        if files
+          alert(
+            "Removed validate_on_* methods",
+            "Validate-on-callback methods (validate_on_create/validate_on_destroy) have been removed",
+            "https://rails.lighthouseapp.com/projects/8994/tickets/3880-validate_on_create-and-validate_on_update-no-longer-seem-to-exist",
+            files
+          )
+        end
+      end
 
       # Check for deprecated router syntax
       def check_routes
