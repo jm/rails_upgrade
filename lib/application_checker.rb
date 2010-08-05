@@ -221,8 +221,8 @@ module Rails
         generators = Dir.glob(base_path + "vendor/plugins/**/generators/**/")
 
         unless generators.empty?
-          files = generators.map do |g|
-                    grep_for("def manifest", g).empty? ? g : nil
+          files = generators.reject do |g|
+                    grep_for("def manifest", g).empty? 
                   end.compact
 
           if !files.empty?
@@ -347,6 +347,9 @@ module Rails
       def grep_for(text, where = "./", double_quote = false, perl_regex = false)
         # If they're on Windows, they probably don't have grep.
         @probably_has_grep ||= (Config::CONFIG['host_os'].downcase =~ /mswin|windows|mingw/).nil?
+        
+        # protect against double root paths in Rails 3
+        where.gsub!(Regexp.new(base_path),'')
 
         lines = if @probably_has_grep
           find_with_grep(text, base_path + where, double_quote, perl_regex)
@@ -355,9 +358,7 @@ module Rails
         end
 
         # ignore comments
-        lines.gsub! /^\s*#.+$/m, ""
-
-        lines
+        lines.gsub /^(\/[^:]+:)?\s*#.+$/m, ""
       end
 
       # Sets a base path for finding files; mostly for testing
@@ -374,22 +375,19 @@ module Rails
                   else
                     "grep -r #{"-P" if perl_regex} --exclude=\*.svn\* '#{text}' #{where}"
                   end
-
+        
         Open3.popen3(command) do |stdin, stdout, stderr|
           value = stdout.read
         end
-
         value
       end
 
       # Use the rak gem to grep the files (not yet implemented)
       def find_with_rak(text, where, double_quote)
         value = ""
-
         Open3.popen3("rak --nogroup -l '#{Regexp.escape(text)}' #{where}") do |stdin, stdout, stderr|
           value = stdout.read
         end
-
         value
       end
 
@@ -405,13 +403,11 @@ module Rails
       def extract_filenames_from_grep(output)
         return nil if output.empty?
 
-        fnames = output.split("\n").map do |fn|
+        output.split("\n").map do |fn|
           if m = fn.match(/^(.+?):/)
             m[1]
           end
-        end.compact
-
-        fnames.uniq
+        end.compact.uniq
       end
 
       def extract_filenames_from_rak(output)
