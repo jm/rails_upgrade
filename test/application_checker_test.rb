@@ -245,6 +245,13 @@ class ApplicationCheckerTest < ActiveSupport::TestCase
 
     assert @checker.alerts.has_key?("Deprecated ERb helper calls")
   end
+  
+  def test_check_old_helpers_lets_regular_blocks_pass
+    make_file("app/views/users/", "another_test.html.erb", "<b>blah blah blah</b><% @some_items.each do |item| %> <label>doo dah</label> <%= item %> <% end %>")
+    @checker.check_old_helpers
+
+    assert_equal @checker.alerts.has_key?("Deprecated ERb helper calls"), false
+  end
 
   def test_check_old_ajax_helpers
     make_file("app/views/sections", "section.js", "<%= link_to_remote 'section-', :update => 'sections', :url => {:action => :destroy, :controller => 'sections', :id => @section.id } %>")
