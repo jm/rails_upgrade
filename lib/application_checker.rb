@@ -259,7 +259,14 @@ module Rails
 
       # Checks for old-style ERb helpers
       def check_old_helpers
-        lines = grep_for("<% .* do.*%>", "app/views/**/*")
+
+        lines = grep_for("<% .*content_tag.* do.*%>", "app/views/**/*")
+        lines += grep_for("<% .*javascript_tag.* do.*%>", "app/views/**/*")
+        lines += grep_for("<% .*form_for.* do.*%>", "app/views/**/*")
+        lines += grep_for("<% .*form_tag.* do.*%>", "app/views/**/*")
+        lines += grep_for("<% .*fields_for.* do.*%>", "app/views/**/*")
+        lines += grep_for("<% .*field_set_tag.* do.*%>", "app/views/**/*")
+        
         files = extract_filenames(lines)
 
         if files
