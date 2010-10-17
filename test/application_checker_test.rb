@@ -79,6 +79,14 @@ class ApplicationCheckerTest < ActiveSupport::TestCase
     assert @checker.alerts.has_key?("named_scope is now just scope")
   end
 
+  def test_named_scope_with_comments_left_over
+    make_file("app/models", "article.rb", "# named_scope :failure")
+    make_file("app/models", "post.rb", "named_scope :failure")
+    @checker.check_ar_methods
+
+    assert @checker.alerts.has_key?("named_scope is now just scope")
+  end
+
   def test_check_routes
     make_file("config/", "routes.rb", "  map.connect 'fail'")
     @checker.check_routes

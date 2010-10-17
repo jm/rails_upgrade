@@ -358,7 +358,10 @@ module Rails
         end
 
         # ignore comments
-        lines.gsub /^(\/[^:]+:)?\s*#.+$/m, ""
+        lines.split("\n").map do |l|
+          clean_line = l.gsub(/^(\/[^:]+:)?\s*#.+$/m, '')
+          clean_line.blank?? nil : clean_line
+        end.compact.join("\n")
       end
 
       # Sets a base path for finding files; mostly for testing
