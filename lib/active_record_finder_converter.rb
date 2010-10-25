@@ -35,7 +35,14 @@ module Rails
               sexp = ParseTree.new.process(ar_finder)
               processed = ArelConverter.new.process(sexp)
               clean = /find\(:(all|first), (.*?)\)\)/.match(processed)
-              processed.gsub!(/find\(:(all|first), (.*?)\)\)/, "#{clean[1]}.#{clean[2]})") 
+              case clean[1]
+              when 'all'
+                processed.gsub!(/find\(:all, (.*?)\)\)/, "#{clean[2]})") 
+              when 'first'
+                processed.gsub!(/find\(:first, (.*?)\)\)/, "#{clean[2]}).first") 
+              else
+                raise RuntimeError, "don't know how to handle #{clean[1]}"
+              end
               [ar_finder,processed]
             rescue SyntaxError => e
               failures << "SyntaxError when evaluatiing options for #{ar_finder}"
