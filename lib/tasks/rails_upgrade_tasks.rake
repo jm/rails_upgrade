@@ -4,6 +4,7 @@ require 'gemfile_generator'
 require 'application_checker'
 require 'new_configuration_generator'
 require 'named_scope_converter'
+require 'active_record_finder_converter'
 
 require 'fileutils'
 
@@ -14,6 +15,12 @@ namespace :rails do
       converter = Rails::Converter::NamedScope.new
       converter.run
     end
+
+    task :finders do
+      converter = Rails::Converter::ActiveRecordFinder.new
+      converter.run
+    end
+
   end
   
   namespace :upgrade do
