@@ -26,24 +26,26 @@ module Rails
         unless ar_finders.empty?
 
           failures = []
-          find_regex = /find\(:all,(.*)\)$/
-          embedded_find_regex = /find\(:all,(.*?)\)\./
-
+          
           new_ar_finders = ar_finders.map do |ar_finder|
-            ar_finder.strip!
-            begin 
-              sexp = ParseTree.new.process(ar_finder)
-              processed = ArelConverter.new.process(sexp)
-              clean = /find\(:(all|first), (.*?)\)\)/.match(processed)
-              case clean[1]
-              when 'all'
-                processed.gsub!(/find\(:all, (.*?)\)\)/, "#{clean[2]})") 
-              when 'first'
-                processed.gsub!(/find\(:first, (.*?)\)\)/, "#{clean[2]}).first") 
+            begin
+              full_method, arguments = find_method(ar_finder)
+              case full_method
+              when nil
+                raise RuntimeError, "can't parse due to unmatched braces"
+              when 'find(:all)'
+                new_line = ar_finder.sub(full_method, 'all')
+              when 'find(:first)'
+                new_line = ar_finder.sub(full_method, 'first')
               else
-                raise RuntimeError, "don't know how to handle #{clean[1]}"
+                finder_hash = arguments.split(',')
+                all_or_first = finder_hash.shift
+                sexp = ParseTree.new.process("{#{finder_hash.join(',')}}")
+                arel = ArelConverter.new.process(sexp)
+                new_line = ar_finder.sub(full_method, arel)
+                new_line += ".first" if all_or_first.include?(':first')
               end
-              [ar_finder,processed]
+              [ar_finder,new_line]
             rescue SyntaxError => e
               failures << "SyntaxError when evaluatiing options for #{ar_finder}"
               nil
@@ -54,6 +56,33 @@ module Rails
           end.compact
           alert(file, new_ar_finders, failures) unless (new_ar_finders.nil? || new_ar_finders.empty?) && failures.empty?
         end
+      end
+      
+    protected
+    
+      def find_method(line)
+        i = line.index('find')
+        braces = 0
+        full_method = ''
+        args = ''
+
+        while i < line.length
+          char = line[i].chr
+          full_method << char
+          args << char if braces > 0
+          case char
+          when '('
+            braces += 1
+          when ')'
+            braces -= 1
+            if braces == 0
+              args.chop!
+              break 
+            end
+          end
+          i += 1
+        end
+        braces == 0 ? [full_method, args] : [nil,nil]
       end
     end
   end
