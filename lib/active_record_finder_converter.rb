@@ -40,8 +40,7 @@ module Rails
               else
                 finder_hash = arguments.split(',')
                 all_or_first = finder_hash.shift
-                sexp = ParseTree.new.process("{#{finder_hash.join(',')}}")
-                arel = ArelConverter.new.process(sexp)
+                arel = ArelConverter.translate("{#{finder_hash.join(',')}}")
                 new_line = ar_finder.sub(full_method, arel)
                 new_line += ".first" if all_or_first.include?(':first')
               end

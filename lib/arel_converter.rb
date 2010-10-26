@@ -4,6 +4,23 @@ require "unified_ruby"
 require 'ruby2ruby'
 
 class ArelConverter < Ruby2Ruby
+  
+  def self.translate(klass_or_str, method = nil)
+    sexp = ParseTree.translate(klass_or_str, method)
+
+    # unified_ruby is a rewriter plugin that rewires
+    # the parse tree to make it easier to work with
+    #  - defn arg above scope / making it arglist / ...
+    unifier = Unifier.new
+    unifier.processors.each do |p|
+      p.unsupported.delete :cfunc # HACK
+    end
+    sexp = unifier.process(sexp)
+
+    self.new.process(sexp)
+  end
+  
+  
   def process_hash(exp)
     result = []
     
