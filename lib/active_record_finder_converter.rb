@@ -43,7 +43,7 @@ module Rails
             end
           end.compact
           alert(file, new_ar_finders, failures) unless (new_ar_finders.nil? || new_ar_finders.empty?) && failures.empty?
-          # File.open(File.expand_path(file), 'w') {|f| f.puts file_contents }
+          #File.open(File.expand_path(file), 'w') {|f| f.puts file_contents }
         end
       end
       
@@ -70,7 +70,8 @@ module Rails
         else
           finder_hash = arguments.split(',')
           all_or_first = finder_hash.shift
-          arel = ArelConverter.translate("{#{finder_hash.join(',')}}")
+          finder_hash = prep_hash_for_parsing(finder_hash.join(','))
+          arel = ArelConverter.translate(finder_hash)
           new_line = finder.sub(full_method, arel)
           new_line += ".first" if all_or_first.include?(':first')
         end
@@ -79,8 +80,8 @@ module Rails
       
       def convert_all_or_first(finder)
         full_method, arguments = extract_method(finder)
-        finder_hash = arguments.split(',')
-        arel = ArelConverter.translate("{#{finder_hash.join(',')}}")
+        arguments = prep_hash_for_parsing(arguments)
+        arel = ArelConverter.translate(arguments)
         new_line = finder.sub(full_method, arel)
         new_line += ".first" if full_method =~ /^first/
         new_line
@@ -109,6 +110,11 @@ module Rails
           i += 1
         end
         braces == 0 ? [full_method, args] : [nil,nil]
+      end
+      
+      def prep_hash_for_parsing(arguments)
+        arguments.strip!
+        arguments =~ /^\{.*\}$/ ? arguments : "{#{arguments}}"
       end
     end
   end

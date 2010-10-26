@@ -115,6 +115,18 @@ class ActiveRecordFinderConverterTest < ActiveSupport::TestCase
 
     assert_equal converted, '@model = Model.where({ :status => "active", :current_user_id => (current_user), :enabled => true })'
   end
+  
+  def test_convert_all_with_braced_conditions
+    converted = @converter.process_line("@model = Model.all({:conditions => {:status => 'active'}})")
+
+    assert_equal converted, '@model = Model.where({ :status => "active" })'
+  end
+
+  def test_convert_find_all_with_braced_conditions
+    converted = @converter.process_line("@model = Model.find(:all, {:conditions => {:status => 'active'}})")
+
+    assert_equal converted, '@model = Model.where({ :status => "active" })'
+  end
 
   def test_convert_keeps_chained_methods
     converted = @converter.process_line("@model = Model.find(:all, :conditions => {:status => 'active'}).map(&:name)")
@@ -122,6 +134,17 @@ class ActiveRecordFinderConverterTest < ActiveSupport::TestCase
     assert_equal converted, '@model = Model.where({ :status => "active" }).map(&:name)'
   end
 
+  def test_convert_all_with_single_argument
+    assert_raise SyntaxError do
+      @converter.process_line("@model = Model.all(conditions_hash)")
+    end
+  end
+  
+  def test_convert_raises_when_line_is_incomplete
+    assert_raise RuntimeError do
+      @converter.process_line("@model = Model.find(:all,")
+    end
+  end
   
   def teardown
     clear_files
