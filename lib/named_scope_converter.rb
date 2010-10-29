@@ -1,5 +1,6 @@
 $:.unshift(File.dirname(__FILE__) + "/../../lib")
 require 'converter_base'
+require 'arel_converter'
 
 module Rails
   module Converter
@@ -27,12 +28,8 @@ module Rails
         new_scopes = named_scopes.map do |scope|
           scope.strip!
           if scope =~ /^[\s#]*named/
-            new_scope = scope.split(",").first.gsub('named_scope','scope')
-            matches = lambda_regex.match(scope.strip)
-
             begin  
-              params = matches ? parse_lambda(matches) : parse_normal(scope)
-              "#{new_scope}, #{params}"
+              [scope, process_line(scope)]
             rescue SyntaxError => e
               failures << "SyntaxError when evaluatiing options for #{scope}"
               nil
@@ -45,30 +42,52 @@ module Rails
         alert(file, new_scopes, failures) unless (new_scopes.nil? || new_scopes.empty?) && failures.empty?
       end
   
-      def parse_lambda(matches)
+      def process_line(line)
         case
-        when  conditions = /:conditions =>\s?\[(.*?)\](,|\})?/.match(matches[2]),
-              conditions = /:conditions =>\s?\{(.*?)\}/.match(matches[2]),
-              conditions = /:conditions =>\s?(.*?)\}/.match(matches[2])
-          where = conditions[1]
+        when line.include?('lambda')
+          new_line = convert_lambda(line)
         else
-          raise RuntimeError, "Can't find :conditions in #{matches[0]}"
-          where = nil
-        end          
-    
-        hash = matches[2].gsub(conditions[0],'').strip.gsub(/,$/, '')
-        options = {}
-        options = eval("{#{hash}}")  if hash
-        options[:where] = where if where
-        options
-    
-        "lambda { |#{matches[1]}| #{contruct_for_arel(options).join('.')}}"
+          new_line = convert_arguments(line)
+        end
+        new_line.gsub('named_scope', 'scope')
       end
   
-      def parse_normal(scope)
-        options = %Q{#{scope.gsub(/^.*?,/, '').strip}} 
-        options = %Q{{#{options}}} unless options =~ /^\{.*\}$/
-        contruct_for_arel(eval(options)).join('.')
+  
+      def convert_lambda(line)
+        full_method, arguments = extract_method(line)
+        clean_arguments = arguments.gsub(/\|.*?\|/, '').strip
+        line.gsub(clean_arguments, ArelConverter.translate(clean_arguments))
+      end
+  
+      def convert_arguments(line)
+        options = %Q{#{line.gsub(/^.*?,/, '').strip}}
+        clean_arguments = %Q{{#{options}}} unless options =~ /^\{.*\}$/
+        line.gsub(options, ArelConverter.translate(clean_arguments))
+      end
+      
+      def extract_method(line)
+        i = line.index('lambda')
+        braces = 0
+        full_method = ''
+        args = ''
+
+        while i < line.length
+          char = line[i].chr
+          full_method << char
+          args << char if braces > 0
+          case char
+          when '{'
+            braces += 1
+          when '}'
+            braces -= 1
+            if braces == 0
+              args.chop!
+              break 
+            end
+          end
+          i += 1
+        end
+        braces == 0 ? [full_method, args] : [nil,nil]
       end
         
     end
