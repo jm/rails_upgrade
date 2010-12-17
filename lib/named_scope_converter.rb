@@ -20,10 +20,9 @@ module Rails
         raw_named_scopes = `grep -r 'named_scope' #{file}`
 
         return if raw_named_scopes == ''
-    
+        
         failures = []
-        lambda_regex = /lambda\s*\{\|(.*?)\|\s*\{(.*?)\}\s*\}$/
-    
+        
         named_scopes = raw_named_scopes.split("\n")
         new_scopes = named_scopes.map do |scope|
           scope.strip!
@@ -51,14 +50,17 @@ module Rails
         end
         new_line.gsub('named_scope', 'scope')
       end
-  
-  
+      
       def convert_lambda(line)
         full_method, arguments = extract_method(line)
+        
+        # if we can't parse out the lambda then raise 
+        raise RuntimeError, "can't parse due to unmatched braces" if full_method.nil?
+        
         clean_arguments = arguments.gsub(/\|.*?\|/, '').strip
         line.gsub(clean_arguments, ArelConverter.translate(clean_arguments))
       end
-  
+      
       def convert_arguments(line)
         options = %Q{#{line.gsub(/^.*?,/, '').strip}}
         clean_arguments = %Q{{#{options}}} unless options =~ /^\{.*\}$/
