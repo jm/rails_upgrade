@@ -251,11 +251,15 @@ module Rails
           if @options[:conditions]
             @options[:via] = @options.delete(:conditions).delete(:method)
           end
-        
+
+          if @options[:method]
+            @options[:via] = @options.delete(:method).to_s
+          end
+
           @options ||= {}
           base = (base % [@path, @options.delete(:controller), (@options.delete(:action) || "index")])
           opts = opts_to_string(@options)
-          
+
           route_pieces = ([base] + extra_options + [opts])
           route_pieces.delete("")
           
