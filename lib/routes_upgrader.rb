@@ -275,14 +275,17 @@ module Rails
       end
       
       def to_route_code
+        # preserve :only & :except options
+        copied_options = @options.reject { |k,v| ![:only, :except].member?(k) }
+        copied_options_str = copied_options.empty? ? '' : ', ' + copied_options.inspect.gsub(/\A\{|\}\z/, '')
         
         if !@children.empty? || @options.has_key?(:collection) || @options.has_key?(:member)
-          prefix = ["#{route_method} :#{@name} do"]
+          prefix = ["#{route_method} :#{@name}#{copied_options_str} do"]
           lines = prefix + custom_methods + [@children.map {|r| r.to_route_code}.join("\n"), "end"]
         
           indent_lines(lines)
         else
-          base = "#{route_method} :%s"
+          base = "#{route_method} :%s#{copied_options_str}"
           indent_lines [base % [@name]]
         end
       end

@@ -139,4 +139,14 @@ end
 
     assert_equal new_routes_code, result
   end
+
+  def test_preserves_resources_except_option
+    route = Rails::Upgrading::FakeResourceRoute.new("hats", :except => [:index])
+    assert_equal "resources :hats, :except=>[:index]", route.to_route_code
+  end
+
+  def test_preserves_resources_only_option
+    route = Rails::Upgrading::FakeResourceRoute.new("hats", :only => :show)
+    assert_equal "resources :hats, :only=>:show", route.to_route_code
+  end
 end
