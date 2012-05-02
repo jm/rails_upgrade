@@ -1,0 +1,21 @@
+GEM
+  specs:
+    ParseTree (3.0.7)
+      RubyInline (>= 3.7.0)
+      sexp_processor (>= 3.0.0)
+    RubyInline (3.9.0)
+      ZenTest (~> 4.3)
+    ZenTest (4.5.0)
+    ruby2ruby (1.2.5)
+      ruby_parser (~> 2.0)
+      sexp_processor (~> 3.0)
+    ruby_parser (2.0.6)
+      sexp_processor (~> 3.0)
+    sexp_processor (3.0.5)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  ParseTree
+  ruby2ruby
